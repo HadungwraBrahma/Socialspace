@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "@/axiosInstance";
 import { toast } from "sonner";
 import { setAuthUser } from "@/redux/authSlice";
 
@@ -50,14 +50,13 @@ const EditProfile = () => {
 
     try {
       setLoading(true);
-      const res = await axios.post(
-        "https://socialspace-server.onrender.com/api/v1/user/profile/edit",
+      const res = await axiosInstance.post(
+        "/api/v1/user/profile/edit",
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-          withCredentials: true,
         }
       );
       if (res.data.success) {

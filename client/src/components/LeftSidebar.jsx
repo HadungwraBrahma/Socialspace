@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { toast } from "sonner";
-import axios from "axios";
+import axiosInstance from "@/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setAuthUser, setSelectedUser } from "@/redux/authSlice";
@@ -53,9 +53,7 @@ const LeftSidebar = () => {
 
   const logoutHandler = async () => {
     try {
-      const res = await axios.get("https://socialspace-server.onrender.com/api/v1/user/logout", {
-        withCredentials: true,
-      });
+      const res = await axiosInstance.get("/api/v1/user/logout");
       if (res.data.success) {
         dispatch(setAuthUser(null));
         dispatch(setSelectedPost(null));

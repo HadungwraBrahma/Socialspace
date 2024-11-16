@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "@/axiosInstance";
 import { useDispatch, useSelector } from "react-redux";
 import { setMessages } from "@/redux/chatSlice";
 
@@ -10,11 +10,8 @@ const useGetAllMessage = () => {
   useEffect(() => {
     const fetchAllMessage = async () => {
       try {
-        const res = await axios.get(
-          `https://socialspace-server.onrender.com/api/v1/message/all/${selectedUser?._id}`,
-          {
-            withCredentials: true,
-          }
+        const res = await axiosInstance.get(
+          `/api/v1/message/all/${selectedUser?._id}`
         );
         if (res.data.success) {
           dispatch(setMessages(res.data.messages));

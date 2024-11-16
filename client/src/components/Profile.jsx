@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Heart, MessageCircle } from "lucide-react";
-import axios from "axios";
+import axiosInstance from "@/axiosInstance";
 import { toast } from "sonner";
 import { setAuthUser, setSelectedUser } from "@/redux/authSlice";
 import ProfileSkeleton from "@/skeletons/ProfileSkeleton";
@@ -47,10 +47,9 @@ const Profile = () => {
     setIsFollowing(!isFollowing);
 
     try {
-      const res = await axios.post(
-        `https://socialspace-server.onrender.com/api/v1/user/followorunfollow/${userId}`,
-        {},
-        { withCredentials: true }
+      const res = await axiosInstance.post(
+        `/api/v1/user/followorunfollow/${userId}`,
+        {}
       );
 
       if (res.data.success) {

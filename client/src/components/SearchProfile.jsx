@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "./ui/button";
 import { Search } from "lucide-react";
-import axios from "axios";
+import axiosInstance from "@/axiosInstance";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -14,10 +14,7 @@ const SearchProfile = () => {
   const handleSearch = async () => {
     setIsSearching(true);
     try {
-      const res = await axios.get(
-        `https://socialspace-server.onrender.com/api/v1/user/serach?q=${query}`,
-        { withCredentials: true }
-      );
+      const res = await axiosInstance.get(`/api/v1/user/serach?q=${query}`);
 
       if (res.data.profiles.length > 0) {
         setProfiles(res.data.profiles);

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "@/axiosInstance";
 import { useDispatch } from "react-redux";
 import { setUserProfile, setLoading } from "@/redux/authSlice";
 
@@ -9,14 +9,9 @@ const useGetUserProfile = (userId) => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       dispatch(setLoading(true));
-      
+
       try {
-        const res = await axios.get(
-          `https://socialspace-server.onrender.com/api/v1/user/${userId}/profile`,
-          {
-            withCredentials: true,
-          }
-        );
+        const res = await axiosInstance.get(`/api/v1/user/${userId}/profile`);
         if (res.data.success) {
           dispatch(setUserProfile(res.data.user));
         }

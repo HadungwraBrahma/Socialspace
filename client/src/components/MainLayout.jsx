@@ -10,7 +10,6 @@ import { toast } from "sonner";
 const MainLayout = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user } = useSelector((store) => store.auth);
 
   useEffect(() => {
     const axiosInterceptor = axios.interceptors.response.use(
@@ -33,8 +32,7 @@ const MainLayout = () => {
         return Promise.reject(error);
       }
     );
-
-    // Cleanup interceptor on component unmount
+    
     return () => {
       axios.interceptors.response.eject(axiosInterceptor);
     };

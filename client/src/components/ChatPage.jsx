@@ -6,11 +6,13 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { MessageCircleCode, ArrowLeft } from "lucide-react";
 import Messages from "./Messages";
-import axios from "axios";
+import axiosInstance from "@/axiosInstance";
 import { setMessages } from "@/redux/chatSlice";
 
 const ChatPage = () => {
-  const { user, suggestedUsers, selectedUser } = useSelector((store) => store.auth);
+  const { user, suggestedUsers, selectedUser } = useSelector(
+    (store) => store.auth
+  );
   const { onlineUsers, messages } = useSelector((store) => store.chat);
   const dispatch = useDispatch();
   const [textMessage, setTextMessage] = useState("");
@@ -22,14 +24,13 @@ const ChatPage = () => {
   const sendMessageHandler = async (receiverId) => {
     if (!textMessage.trim()) return;
     try {
-      const res = await axios.post(
-        `https://socialspace-server.onrender.com/api/v1/message/send/${receiverId}`,
+      const res = await axiosInstance.post(
+        `/api/v1/message/send/${receiverId}`,
         { textMessage },
         {
           headers: {
             "Content-Type": "application/json",
           },
-          withCredentials: true,
         }
       );
       if (res.data.success) {
@@ -49,13 +50,19 @@ const ChatPage = () => {
     <div className="flex flex-col lg:flex-row lg:ml-[18%] h-screen overflow-hidden bg-gray-50">
       {/* Left Section: Suggested Users */}
       <section
-        className={`w-full lg:w-1/3 my-8 px-4 lg:px-0 bg-white rounded-lg shadow-lg ${!selectedUser ? "block" : "hidden"}`}
+        className={`w-full lg:w-1/3 my-8 px-4 lg:px-0 bg-white rounded-lg shadow-lg ${
+          !selectedUser ? "block" : "hidden"
+        }`}
       >
-        <h1 className="font-bold mb-4 text-xl text-gray-700 mt-4">{user?.username} chats</h1>
+        <h1 className="font-bold mb-4 text-xl text-gray-700 mt-4">
+          {user?.username} chats
+        </h1>
         <hr className="mb-4 border-gray-300" />
         <div className="overflow-y-auto max-h-[80vh] space-y-4">
           {usersToDisplay.length === 0 ? (
-            <div className="text-gray-500 text-center">No users to chat with.</div>
+            <div className="text-gray-500 text-center">
+              No users to chat with.
+            </div>
           ) : (
             usersToDisplay.map((suggestedUser) => {
               const isOnline = onlineUsers.includes(suggestedUser?._id);
@@ -70,9 +77,13 @@ const ChatPage = () => {
                     <AvatarFallback>DP</AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col">
-                    <span className="font-medium text-gray-800">{suggestedUser?.username}</span>
+                    <span className="font-medium text-gray-800">
+                      {suggestedUser?.username}
+                    </span>
                     <span
-                      className={`text-xs font-bold ${isOnline ? "text-green-500" : "text-red-500"}`}
+                      className={`text-xs font-bold ${
+                        isOnline ? "text-green-500" : "text-red-500"
+                      }`}
                     >
                       {isOnline ? "Online" : "Offline"}
                     </span>
@@ -94,7 +105,9 @@ const ChatPage = () => {
                 <AvatarFallback>DP</AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
-                <span className="font-semibold text-gray-800">{selectedUser?.username}</span>
+                <span className="font-semibold text-gray-800">
+                  {selectedUser?.username}
+                </span>
               </div>
             </div>
             <Button

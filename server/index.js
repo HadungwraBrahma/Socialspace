@@ -22,8 +22,20 @@ app.get("/", (req, res) => {
 app.use(express.json());
 app.use(cookieParser());
 app.use(urlencoded({ extended: true }));
+
+const allowedOrigins = [
+  "https://socialspace-client.onrender.com",
+  "http://localhost:5173", //for dev purpose
+];
+
 const corsOptions = {
-  origin: "https://socialspace-client.onrender.com",
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
 };
 app.use(cors(corsOptions));

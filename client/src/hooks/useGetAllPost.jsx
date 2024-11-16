@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import axios from "axios";
+import axiosInstance from "@/axiosInstance";
 import { useDispatch } from "react-redux";
 import { setPost } from "@/redux/postSlice";
 
@@ -9,9 +9,7 @@ const useGetAllPost = () => {
   useEffect(() => {
     const fetchAllPost = async () => {
       try {
-        const res = await axios.get("https://socialspace-server.onrender.com/api/v1/post/all", {
-          withCredentials: true,
-        });
+        const res = await axiosInstance.get("/api/v1/post/all");
         if (res.data.success) {
           dispatch(setPost(res.data.posts));
         }

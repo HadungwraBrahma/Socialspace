@@ -27,12 +27,14 @@ export const addNewPost = async (req, res) => {
     const fileUri = `data:image/jpeg;base64,${optimizedImageBuffer.toString(
       "base64"
     )}`;
+
     const cloudResponse = await cloudinary.uploader.upload(fileUri);
     const post = await Post.create({
       caption,
       image: cloudResponse.secure_url,
+      cloudinaryId: cloudResponse.public_id,
       author: authorId,
-    });
+    });    
 
     const user = await User.findById(authorId);
     if (user) {
@@ -104,30 +106,6 @@ export const getAllPost = async (req, res) => {
     console.log(err);
   }
 };
-
-/* export const getUserPost = async (req, res) => {
-  try {
-    const authorId = req.id;
-    const posts = await Post.find({ author: authorId })
-      .sort({ createdAt: -1 })
-      .populate({
-        path: "author",
-        select: "username profilePicture",
-      })
-      .populate({
-        path: "comments",
-        sort: { createdAt: -1 },
-        populate: { path: "author", select: "username profilePicture" },
-      });
-      console.log("Hello", posts)
-    return res.status(200).json({
-      posts,
-      success: true,
-    });
-  } catch (err) {
-    console.log(err);
-  }
-}; */
 
 export const likePost = async (req, res) => {
   try {
@@ -290,26 +268,36 @@ export const deletePost = async (req, res) => {
     if (!post) {
       return res
         .status(404)
-        .json({ message: "Post not found", success: fasle });
+        .json({ message: "Post not found", success: false });
     }
 
     if (post.author.toString() !== authorId) {
       return res.status(403).json({ message: "Unauthorized" });
     }
 
+    // Delete the image from Cloudinary
+    if (post.cloudinaryId) {
+      await cloudinary.uploader.destroy(post.cloudinaryId);
+    }
+
+    // Delete the post
     await Post.findByIdAndDelete(postId);
 
-    let user = await User.findById(authorId);
+    // Remove the post ID from the user's posts
+    const user = await User.findById(authorId);
     user.posts = user.posts.filter((id) => id.toString() !== postId);
     await user.save();
 
+    // Delete associated comments
     await Comment.deleteMany({ post: postId });
 
     return res.status(200).json({ success: true, message: "Post deleted" });
   } catch (err) {
     console.log(err);
+    return res.status(500).json({ message: "Server error", success: false });
   }
 };
+
 
 export const bookmarkPost = async (req, res) => {
   try {

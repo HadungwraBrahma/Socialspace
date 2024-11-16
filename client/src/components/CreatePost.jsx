@@ -6,7 +6,7 @@ import { Button } from "./ui/button";
 import { readFileAsDataURL } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import axios from "axios";
+import axiosInstance from "@/axiosInstance";
 import { useDispatch, useSelector } from "react-redux";
 import { setPost } from "@/redux/postSlice";
 
@@ -35,14 +35,13 @@ const CreatePost = ({ open, setOpen }) => {
     if (imagePreview) formData.append("image", file);
     try {
       setLoading(true);
-      const res = await axios.post(
-        "https://socialspace-server.onrender.com/api/v1/post/addpost",
+      const res = await axiosInstance.post(
+        "/api/v1/post/addpost",
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-          withCredentials: true,
         }
       );
       if (res.data.success) {

@@ -8,7 +8,11 @@ const postSchema = new mongoose.Schema(
     },
     image: {
       type: String,
-      required: true,
+      required: true, // URL of the image from Cloudinary
+    },
+    cloudinaryId: {
+      type: String,
+      required: true, // Public ID of the image on Cloudinary
     },
     author: {
       type: mongoose.Schema.Types.ObjectId,

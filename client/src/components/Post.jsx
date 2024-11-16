@@ -11,7 +11,7 @@ import {
 import { Button } from "./ui/button";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
+import axiosInstance from "@/axiosInstance";
 import { toast } from "sonner";
 import { setPost, setSelectedPost } from "@/redux/postSlice";
 import { Badge } from "./ui/badge";
@@ -57,9 +57,8 @@ const Post = ({ post }) => {
 
     try {
       const action = liked ? "dislike" : "like";
-      const res = await axios.get(
-        `https://socialspace-server.onrender.com/api/v1/post/${post?._id}/${action}`,
-        { withCredentials: true }
+      const res = await axiosInstance.get(
+        `/api/v1/post/${post?._id}/${action}`
       );
       if (res.data.success) {
         const updatedPostData = posts.map((p) =>
@@ -90,12 +89,11 @@ const Post = ({ post }) => {
     setIsPostNewCommentLoading(true);
 
     try {
-      const res = await axios.post(
-        `https://socialspace-server.onrender.com/api/v1/post/${post?._id}/comment`,
+      const res = await axiosInstance.post(
+        `/api/v1/post/${post?._id}/comment`,
         { text },
         {
           headers: { "Content-Type": "application/json" },
-          withCredentials: true,
         }
       );
       if (res.data.success) {
@@ -125,9 +123,8 @@ const Post = ({ post }) => {
     dispatch(setPost(updatedPostData));
 
     try {
-      const res = await axios.delete(
-        `https://socialspace-server.onrender.com/api/v1/post/delete/${post?._id}`,
-        { withCredentials: true }
+      const res = await axiosInstance.delete(
+        `/api/v1/post/delete/${post?._id}`
       );
       if (res.data.success) {
         toast.success(res.data.message);
@@ -151,10 +148,7 @@ const Post = ({ post }) => {
     dispatch(setAuthUser({ ...user, bookmarks: updatedBookmarks }));
 
     try {
-      const res = await axios.get(
-        `https://socialspace-server.onrender.com/api/v1/post/${post?._id}/bookmark`,
-        { withCredentials: true }
-      );
+      const res = await axiosInstance.get(`/api/v1/post/${post?._id}/bookmark`);
       if (res.data.success) {
         // toast.success(res.data.message);
       } else {
@@ -180,10 +174,9 @@ const Post = ({ post }) => {
     setIsFollowingLoading(true);
 
     try {
-      const res = await axios.post(
-        `https://socialspace-server.onrender.com/api/v1/user/followorunfollow/${post?.author?._id}`,
-        {},
-        { withCredentials: true }
+      const res = await axiosInstance.post(
+        `/api/v1/user/followorunfollow/${post?.author?._id}`,
+        {}
       );
       if (res.data.success) {
         toast.success(res.data.message);

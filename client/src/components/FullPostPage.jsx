@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { Bookmark, BookmarkCheck, Send } from "lucide-react";
-import axios from "axios";
+import axiosInstance from "@/axiosInstance";
 import { toast } from "sonner";
 import { useParams, Link } from "react-router-dom";
 import { Badge } from "./ui/badge";
@@ -31,10 +31,7 @@ const FullPostPage = () => {
   useEffect(() => {
     const fetchPostDetails = async () => {
       try {
-        const res = await axios.get(
-          `https://socialspace-server.onrender.com/api/v1/post/${postId}`,
-          { withCredentials: true }
-        );
+        const res = await axiosInstance.get(`/api/v1/post/${postId}`);
         const fetchedPost = res.data.post;
 
         setPostDetails(fetchedPost);
@@ -63,10 +60,7 @@ const FullPostPage = () => {
 
     try {
       const action = liked ? "dislike" : "like";
-      const res = await axios.get(
-        `https://socialspace-server.onrender.com/api/v1/post/${postId}/${action}`,
-        { withCredentials: true }
-      );
+      const res = await axiosInstance.get(`/api/v1/post/${postId}/${action}`);
 
       if (res.data.success) {
         const updatedPostData = posts.map((p) =>
@@ -103,10 +97,7 @@ const FullPostPage = () => {
     dispatch(setAuthUser({ ...user, bookmarks: updatedBookmarks }));
 
     try {
-      const res = await axios.get(
-        `https://socialspace-server.onrender.com/api/v1/post/${postId}/bookmark`,
-        { withCredentials: true }
-      );
+      const res = await axiosInstance.get(`/api/v1/post/${postId}/bookmark`);
 
       if (res.data.success) {
         // toast.success(res.data.message);
@@ -145,11 +136,9 @@ const FullPostPage = () => {
     setText("");
 
     try {
-      const res = await axios.post(
-        `https://socialspace-server.onrender.com/api/v1/post/${postId}/comment`,
-        { text },
-        { withCredentials: true }
-      );
+      const res = await axiosInstance.post(`/api/v1/post/${postId}/comment`, {
+        text,
+      });
 
       if (res.data.success) {
         setComments((prev) =>
@@ -203,9 +192,8 @@ const FullPostPage = () => {
     dispatch(setPost(updatedPostData));
 
     try {
-      const res = await axios.delete(
-        `https://socialspace-server.onrender.com/api/v1/post/${postId}/comment/${commentId}`,
-        { withCredentials: true }
+      const res = await axiosInstance.delete(
+        `/api/v1/post/${postId}/comment/${commentId}`
       );
 
       if (res.data.success) {

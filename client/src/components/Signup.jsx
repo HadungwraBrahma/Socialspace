@@ -3,7 +3,7 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
-import axios from "axios";
+import axiosInstance from "@/axiosInstance";
 import { Link, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useSelector } from "react-redux";
@@ -26,16 +26,11 @@ const Signup = () => {
     e.preventDefault();
     try {
       setLoading(true);
-      const res = await axios.post(
-        "https://socialspace-server.onrender.com/api/v1/user/register",
-        input,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        }
-      );
+      const res = await axiosInstance.post("/api/v1/user/register", input, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       if (res.data.success) {
         navigate("/login");
         toast.success(res.data.message);

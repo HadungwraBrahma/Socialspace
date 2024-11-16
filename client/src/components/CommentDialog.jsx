@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 import { useDispatch, useSelector } from "react-redux";
 import Comment from "./Comment";
-import axios from "axios";
+import axiosInstance from "@/axiosInstance";
 import { toast } from "sonner";
 import { setPost } from "@/redux/postSlice";
 import { setAuthUser } from "@/redux/authSlice";
@@ -43,10 +43,9 @@ const CommentDialog = ({ open, setOpen }) => {
   const commentHandler = async () => {
     try {
       setIsPostNewCommentLoading(true);
-      const res = await axios.post(
-        `https://socialspace-server.onrender.com/api/v1/post/${selectedPost?._id}/comment`,
-        { text },
-        { withCredentials: true }
+      const res = await axiosInstance.post(
+        `/api/v1/post/${selectedPost?._id}/comment`,
+        { text }
       );
       if (res.data.success) {
         const updatedCommentData = [...comment, res.data.comment];
@@ -82,9 +81,8 @@ const CommentDialog = ({ open, setOpen }) => {
       );
       dispatch(setPost(updatedPostData));
 
-      const res = await axios.delete(
-        `https://socialspace-server.onrender.com/api/v1/post/${selectedPost?._id}/comment/${commentId}`,
-        { withCredentials: true }
+      const res = await axiosInstance.delete(
+        `/api/v1/post/${selectedPost?._id}/comment/${commentId}`
       );
 
       if (!res.data.success) {
@@ -110,10 +108,9 @@ const CommentDialog = ({ open, setOpen }) => {
   const followUnfollowHandler = async () => {
     setIsFollowLoading(true);
     try {
-      const res = await axios.post(
-        `https://socialspace-server.onrender.com/api/v1/user/followorunfollow/${selectedPost?.author?._id}`,
-        {},
-        { withCredentials: true }
+      const res = await axiosInstance.post(
+        `/api/v1/user/followorunfollow/${selectedPost?.author?._id}`,
+        {}
       );
       if (res.data.success) {
         toast.success(res.data.message);
