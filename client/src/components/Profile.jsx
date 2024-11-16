@@ -21,6 +21,7 @@ const Profile = () => {
   const [isFollowing, setIsFollowing] = useState(
     user?.following?.includes(userId) || false
   );
+  const [isFollowingLoading, setIsFollowingLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -32,29 +33,43 @@ const Profile = () => {
     activeTab === "posts" ? userProfile?.posts : userProfile?.bookmarks;
 
   const followUnfollowHandler = async () => {
+    if (isFollowingLoading) return;
+
+    setIsFollowingLoading(true);
+
+    const newFollowing = isFollowing
+      ? user.following.filter((id) => id !== userId)
+      : [...user.following, userId];
+
+    const updatedUser = { ...user, following: newFollowing };
+    dispatch(setAuthUser(updatedUser));
+
+    setIsFollowing(!isFollowing);
+
     try {
       const res = await axios.post(
-        `http://localhost:8000/api/v1/user/followorunfollow/${userId}`,
+        `https://socialspace-server.onrender.com/api/v1/user/followorunfollow/${userId}`,
         {},
         { withCredentials: true }
       );
 
       if (res.data.success) {
         toast.success(res.data.message);
-        let newFollowing;
-        if (isFollowing) {
-          newFollowing = user.following.filter((id) => id !== userId);
-        } else {
-          newFollowing = [...user.following, userId];
-        }
-
-        const updatedUser = { ...user, following: newFollowing };
-        dispatch(setAuthUser(updatedUser));
-        setIsFollowing(!isFollowing);
+      } else {
+        throw new Error(res.data.message);
       }
     } catch (err) {
-      console.log(err);
-      toast.error(err.response?.data?.message);
+      console.error(err);
+      toast.error(err.response?.data?.message || "Something went wrong");
+
+      const revertedFollowing = isFollowing
+        ? [...user.following, userId]
+        : user.following.filter((id) => id !== userId);
+      const revertedUser = { ...user, following: revertedFollowing };
+      dispatch(setAuthUser(revertedUser));
+      setIsFollowing(isFollowing);
+    } finally {
+      setIsFollowingLoading(false);
     }
   };
 
@@ -100,8 +115,9 @@ const Profile = () => {
                       onClick={followUnfollowHandler}
                       variant="secondary"
                       className="text-sm py-2 px-4 rounded-md transition-colors duration-300"
+                      disabled={isFollowingLoading}
                     >
-                      Unfollow
+                      {isFollowingLoading ? "Following..." : "Unfollow"}
                     </Button>
                     <Button
                       onClick={messageHandler}
@@ -115,8 +131,9 @@ const Profile = () => {
                   <Button
                     onClick={followUnfollowHandler}
                     className="bg-[#0095F6] hover:bg-[#3192d2] text-sm py-2 px-4 rounded-md transition-colors duration-300"
+                    disabled={isFollowingLoading}
                   >
-                    Follow
+                    {isFollowingLoading ? "Unfollowing..." : "Follow"}
                   </Button>
                 )}
               </div>

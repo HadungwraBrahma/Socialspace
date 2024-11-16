@@ -82,7 +82,8 @@ export const login = async (req, res) => {
     return res
       .cookie("token", token, {
         httpOnly: true,
-        sameSite: "strict",
+        secure: true,
+        sameSite: "None",
         maxAge: 1 * 24 * 60 * 60 * 1000,
       })
       .json({
@@ -115,7 +116,7 @@ export const getProfile = async (req, res) => {
 
     let { password: pass, ...userWithoutPassword } = user.toObject();
     return res.status(200).json({
-      user:userWithoutPassword,
+      user: userWithoutPassword,
       success: true,
     });
   } catch (err) {
@@ -273,7 +274,6 @@ export const followOrUnfollow = async (req, res) => {
     console.log(err);
   }
 };
-
 
 export const searchProfile = async (req, res) => {
   try {

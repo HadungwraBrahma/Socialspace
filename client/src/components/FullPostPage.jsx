@@ -32,7 +32,7 @@ const FullPostPage = () => {
     const fetchPostDetails = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:8000/api/v1/post/${postId}`,
+          `https://socialspace-server.onrender.com/api/v1/post/${postId}`,
           { withCredentials: true }
         );
         const fetchedPost = res.data.post;
@@ -54,17 +54,21 @@ const FullPostPage = () => {
   }, [postId, user]);
 
   const likeOrDislikeHandler = async () => {
+    const originalLiked = liked;
+    const originalPostLike = postLike;
+
+    const updatedLikes = liked ? postLike - 1 : postLike + 1;
+    setLiked(!liked);
+    setPostLike(updatedLikes);
+
     try {
       const action = liked ? "dislike" : "like";
       const res = await axios.get(
-        `http://localhost:8000/api/v1/post/${postId}/${action}`,
+        `https://socialspace-server.onrender.com/api/v1/post/${postId}/${action}`,
         { withCredentials: true }
       );
-      if (res.data.success) {
-        const updatedLikes = liked ? postLike - 1 : postLike + 1;
-        setPostLike(updatedLikes);
-        setLiked(!liked);
 
+      if (res.data.success) {
         const updatedPostData = posts.map((p) =>
           p._id === post._id
             ? {
@@ -76,45 +80,84 @@ const FullPostPage = () => {
             : p
         );
         dispatch(setPost(updatedPostData));
-        toast.success(res.data.message);
+      } else {
+        setLiked(originalLiked);
+        setPostLike(originalPostLike);
+        toast.error("Error updating like status.");
       }
     } catch (err) {
       console.error(err);
+      setLiked(originalLiked);
+      setPostLike(originalPostLike);
+      toast.error("Error updating like status.");
     }
   };
 
   const bookmarkHandler = async () => {
+    const wasBookmarked = bookmarked;
+    setBookmarked(!bookmarked);
+
+    const updatedBookmarks = wasBookmarked
+      ? user.bookmarks.filter((id) => id !== postId)
+      : [...user.bookmarks, postId];
+    dispatch(setAuthUser({ ...user, bookmarks: updatedBookmarks }));
+
     try {
       const res = await axios.get(
-        `http://localhost:8000/api/v1/post/${postId}/bookmark`,
+        `https://socialspace-server.onrender.com/api/v1/post/${postId}/bookmark`,
         { withCredentials: true }
       );
-      if (res.data.success) {
-        toast.success(res.data.message);
-        setBookmarked(!bookmarked);
 
-        const updatedBookmarks = bookmarked
-          ? user.bookmarks.filter((id) => id !== postId)
-          : [...user.bookmarks, postId];
-        dispatch(setAuthUser({ ...user, bookmarks: updatedBookmarks }));
+      if (res.data.success) {
+        // toast.success(res.data.message);
+      } else {
+        throw new Error("Failed to update bookmark.");
       }
     } catch (err) {
       console.error(err);
+
+      setBookmarked(wasBookmarked);
+
+      const rollbackBookmarks = wasBookmarked
+        ? [...user.bookmarks, postId]
+        : user.bookmarks.filter((id) => id !== postId);
+      dispatch(setAuthUser({ ...user, bookmarks: rollbackBookmarks }));
+
+      toast.error("Failed to update bookmark. Please try again.");
     }
   };
 
   const commentHandler = async () => {
     if (!text.trim()) return;
 
+    const newComment = {
+      _id: Date.now(), // Temporary ID for the optimistic update
+      text: text,
+      author: {
+        _id: user._id,
+        username: user.username,
+        profilePicture: user.profilePicture,
+      },
+      createdAt: new Date().toISOString(),
+    };
+
+    setComments((prev) => [newComment, ...prev]);
+    setText("");
+
     try {
       const res = await axios.post(
-        `http://localhost:8000/api/v1/post/${postId}/comment`,
+        `https://socialspace-server.onrender.com/api/v1/post/${postId}/comment`,
         { text },
         { withCredentials: true }
       );
+
       if (res.data.success) {
-        setComments((prev) => [res.data.comment, ...prev]);
-        setText("");
+        setComments((prev) =>
+          prev.map((comment) =>
+            comment._id === newComment._id ? res.data.comment : comment
+          )
+        );
+
         const updatedPostData = posts.map((p) =>
           p._id === post._id
             ? {
@@ -124,10 +167,15 @@ const FullPostPage = () => {
             : p
         );
         dispatch(setPost(updatedPostData));
-        toast.success(res.data.message);
+      } else {
+        throw new Error("Failed to post comment.");
       }
     } catch (err) {
       console.error(err);
+      setComments((prev) =>
+        prev.filter((comment) => comment._id !== newComment._id)
+      );
+      toast.error("Failed to post comment. Please try again.");
     }
   };
 
@@ -140,30 +188,41 @@ const FullPostPage = () => {
   };
 
   const deleteCommentHandler = async (commentId) => {
+    const originalComments = [...comments];
+
+    const updatedComments = comments.filter(
+      (comment) => comment._id !== commentId
+    );
+
+    setComments(updatedComments);
+
+    const updatedPostData = posts.map((p) =>
+      p._id === post._id ? { ...p, comments: [...updatedComments] } : p
+    );
+
+    dispatch(setPost(updatedPostData));
+
     try {
       const res = await axios.delete(
-        `http://localhost:8000/api/v1/post/${postId}/comment/${commentId}`,
+        `https://socialspace-server.onrender.com/api/v1/post/${postId}/comment/${commentId}`,
         { withCredentials: true }
       );
+
       if (res.data.success) {
-        const updatedComments = comments.filter(
-          (comment) => comment._id !== commentId
-        );
-        setComments(updatedComments);
-        const updatedPostData = posts.map((p) =>
-          p._id === post._id
-            ? {
-                ...p,
-                comments: updatedComments,
-              }
-            : p
-        );
-        dispatch(setPost(updatedPostData));
-        toast.success(res.data.message);
+        // toast.success(res.data.message);
+      } else {
+        throw new Error("Failed to delete comment.");
       }
     } catch (err) {
       console.error(err);
-      toast.error("Error deleting comment.");
+      setComments(originalComments);
+
+      const rollbackPostData = posts.map((p) =>
+        p._id === post._id ? { ...p, comments: [...originalComments] } : p
+      );
+      dispatch(setPost(rollbackPostData));
+
+      toast.error("Error deleting comment. Please try again.");
     }
   };
 

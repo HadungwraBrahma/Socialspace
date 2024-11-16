@@ -36,7 +36,7 @@ const CreatePost = ({ open, setOpen }) => {
     try {
       setLoading(true);
       const res = await axios.post(
-        "http://localhost:8000/api/v1/post/addpost",
+        "https://socialspace-server.onrender.com/api/v1/post/addpost",
         formData,
         {
           headers: {
@@ -75,9 +75,6 @@ const CreatePost = ({ open, setOpen }) => {
             <h1 className="font-semibold text-sm sm:text-base">
               {user?.username}
             </h1>
-            <span className="text-gray-600 text-xs sm:text-sm">
-              {user?.bio ? user?.bio : "Bio here..."}
-            </span>
           </div>
         </div>
 

@@ -51,7 +51,7 @@ const EditProfile = () => {
     try {
       setLoading(true);
       const res = await axios.post(
-        "http://localhost:8000/api/v1/user/profile/edit",
+        "https://socialspace-server.onrender.com/api/v1/user/profile/edit",
         formData,
         {
           headers: {
@@ -101,8 +101,9 @@ const EditProfile = () => {
               <AvatarFallback>DP</AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="font-semibold text-sm sm:text-base">{user?.username}</h1>
-              <span className="text-gray-600 text-xs sm:text-sm">{user?.bio || "Bio here..."}</span>
+              <h1 className="font-semibold text-sm sm:text-base">
+                {user?.username}
+              </h1>
             </div>
           </div>
           <input
@@ -118,7 +119,6 @@ const EditProfile = () => {
             Change photo
           </Button>
         </div>
-
         {/* Bio Section */}
         <div>
           <h1 className="font-bold text-xl mb-2">Bio</h1>
@@ -126,6 +126,7 @@ const EditProfile = () => {
             value={input.bio}
             onChange={(e) => setInput({ ...input, bio: e.target.value })}
             name="bio"
+            maxlength="250"
             className="focus-visible:ring-transparent"
             rows={4}
           />

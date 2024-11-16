@@ -6,15 +6,18 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
+      maxlength: [150, "Username cannot exceed 150 characters."],
     },
     email: {
       type: String,
       required: true,
       unique: true,
+      maxlength: [300, "Email cannot exceed 150 characters."],
     },
     password: {
       type: String,
       required: true,
+      maxlength: [300, "Username cannot exceed 150 characters."],
     },
     profilePicture: {
       type: String,
@@ -23,6 +26,7 @@ const userSchema = new mongoose.Schema(
     bio: {
       type: String,
       default: "",
+      maxlength: [250, "Bio cannot exceed 250 characters."],
     },
     gender: {
       type: String,

@@ -9,11 +9,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 const SearchProfile = () => {
   const [query, setQuery] = useState("");
   const [profiles, setProfiles] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
 
   const handleSearch = async () => {
+    setIsSearching(true);
     try {
       const res = await axios.get(
-        `http://localhost:8000/api/v1/user/serach?q=${query}`,
+        `https://socialspace-server.onrender.com/api/v1/user/serach?q=${query}`,
         { withCredentials: true }
       );
 
@@ -24,6 +26,8 @@ const SearchProfile = () => {
       }
     } catch (err) {
       toast.error(err.response.data.message);
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -31,6 +35,13 @@ const SearchProfile = () => {
     if (e.key === "Enter") {
       handleSearch();
     }
+  };
+
+  const truncateBio = (bio, maxLength = 100) => {
+    if (bio?.length > maxLength) {
+      return bio.slice(0, maxLength) + "...";
+    }
+    return bio;
   };
 
   return (
@@ -52,7 +63,11 @@ const SearchProfile = () => {
         </Button>
       </div>
 
-      {profiles !== null && profiles?.length === 0 ? (
+      {isSearching ? (
+        <div className="text-center text-gray-600">
+          <h1 className="text-xl">Searching...</h1>
+        </div>
+      ) : profiles !== null && profiles?.length === 0 ? (
         <div className="text-center text-gray-600">
           <h1 className="text-xl">No profiles found!</h1>
         </div>
@@ -73,7 +88,7 @@ const SearchProfile = () => {
                         {user?.username}
                       </h2>
                       <p className="text-sm text-gray-500">
-                        {user?.bio || "No bio available"}
+                        {truncateBio(user?.bio || "No bio available")}
                       </p>
                     </div>
                   </div>

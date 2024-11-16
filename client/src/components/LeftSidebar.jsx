@@ -53,7 +53,7 @@ const LeftSidebar = () => {
 
   const logoutHandler = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/v1/user/logout", {
+      const res = await axios.get("https://socialspace-server.onrender.com/api/v1/user/logout", {
         withCredentials: true,
       });
       if (res.data.success) {

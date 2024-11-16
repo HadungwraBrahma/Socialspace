@@ -27,7 +27,7 @@ const Signup = () => {
     try {
       setLoading(true);
       const res = await axios.post(
-        "http://localhost:8000/api/v1/user/register",
+        "https://socialspace-server.onrender.com/api/v1/user/register",
         input,
         {
           headers: {
@@ -79,6 +79,7 @@ const Signup = () => {
             value={input.username}
             onChange={changeEventHandler}
             className="focus-visible:ring-transparent"
+            maxlength="150"
           />
         </div>
         <div>
@@ -89,6 +90,7 @@ const Signup = () => {
             value={input.email}
             onChange={changeEventHandler}
             className="focus-visible:ring-transparent"
+            maxlength="300"
           />
         </div>
         <div>
@@ -99,6 +101,7 @@ const Signup = () => {
             value={input.password}
             onChange={changeEventHandler}
             className="focus-visible:ring-transparent"
+            maxlength="300"
           />
         </div>
         {loading ? (

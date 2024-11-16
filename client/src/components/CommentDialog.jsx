@@ -20,6 +20,8 @@ const CommentDialog = ({ open, setOpen }) => {
   const [following, setFollowing] = useState(
     user?.following.includes(selectedPost?.author?._id) || false
   );
+  const [isPostNewCommentloading, setIsPostNewCommentLoading] = useState(false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false); // New state
 
   useEffect(() => {
     if (selectedPost) {
@@ -38,10 +40,11 @@ const CommentDialog = ({ open, setOpen }) => {
     setText(e.target.value.trim() ? e.target.value : "");
   };
 
-  const sendMessageHandler = async () => {
+  const commentHandler = async () => {
     try {
+      setIsPostNewCommentLoading(true);
       const res = await axios.post(
-        `http://localhost:8000/api/v1/post/${selectedPost?._id}/comment`,
+        `https://socialspace-server.onrender.com/api/v1/post/${selectedPost?._id}/comment`,
         { text },
         { withCredentials: true }
       );
@@ -61,40 +64,54 @@ const CommentDialog = ({ open, setOpen }) => {
       }
     } catch (err) {
       console.log(err);
+      toast.error("Failed to post comment.");
+    } finally {
+      setIsPostNewCommentLoading(false);
     }
   };
 
   const deleteCommentHandler = async (commentId) => {
+    const deletedComment = comment.find((com) => com._id === commentId);
+
     try {
+      const updatedCommentData = comment.filter((com) => com._id !== commentId);
+      setComment(updatedCommentData);
+
+      const updatedPostData = posts.map((p) =>
+        p._id === selectedPost._id ? { ...p, comments: updatedCommentData } : p
+      );
+      dispatch(setPost(updatedPostData));
+
       const res = await axios.delete(
-        `http://localhost:8000/api/v1/post/${selectedPost?._id}/comment/${commentId}`,
+        `https://socialspace-server.onrender.com/api/v1/post/${selectedPost?._id}/comment/${commentId}`,
         { withCredentials: true }
       );
-      if (res.data.success) {
-        const updatedCommentData = comment.filter(
-          (com) => com._id !== commentId
-        );
-        setComment(updatedCommentData);
 
-        const updatedPostData = posts.map((p) =>
-          p._id === selectedPost._id
-            ? { ...p, comments: updatedCommentData }
-            : p
-        );
-
-        dispatch(setPost(updatedPostData));
-        toast.success("Comment deleted successfully!");
+      if (!res.data.success) {
+        throw new Error("Failed to delete the comment");
       }
+
+      // toast.success("Comment deleted successfully!");
     } catch (err) {
-      console.log(err);
-      toast.error("Failed to delete the comment.");
+      console.error(err);
+      toast.error("Failed to delete the comment. Restoring...");
+
+      setComment([...comment, deletedComment]);
+
+      const updatedPostData = posts.map((p) =>
+        p._id === selectedPost._id
+          ? { ...p, comments: [...p.comments, deletedComment] }
+          : p
+      );
+      dispatch(setPost(updatedPostData));
     }
   };
 
   const followUnfollowHandler = async () => {
+    setIsFollowLoading(true);
     try {
       const res = await axios.post(
-        `http://localhost:8000/api/v1/user/followorunfollow/${selectedPost?.author?._id}`,
+        `https://socialspace-server.onrender.com/api/v1/user/followorunfollow/${selectedPost?.author?._id}`,
         {},
         { withCredentials: true }
       );
@@ -111,6 +128,8 @@ const CommentDialog = ({ open, setOpen }) => {
     } catch (err) {
       console.error(err);
       toast.error(err.response?.data?.message);
+    } finally {
+      setIsFollowLoading(false);
     }
   };
 
@@ -153,8 +172,15 @@ const CommentDialog = ({ open, setOpen }) => {
                 onClick={followUnfollowHandler}
                 variant="ghost"
                 className="text-[#ED4956] font-bold"
+                disabled={isFollowLoading}
               >
-                {following ? "Unfollow" : "Follow"}
+                {isFollowLoading
+                  ? following
+                    ? "Unfollowing..."
+                    : "Following..."
+                  : following
+                  ? "Unfollow"
+                  : "Follow"}
               </Button>
             )}
           </div>
@@ -184,11 +210,11 @@ const CommentDialog = ({ open, setOpen }) => {
               value={text}
             />
             <Button
-              disabled={!text.trim()}
-              onClick={sendMessageHandler}
+              disabled={!text.trim() || isPostNewCommentloading}
+              onClick={commentHandler}
               variant="outline"
             >
-              Post
+              {isPostNewCommentloading ? "Posting..." : "Post"}
             </Button>
           </div>
         </div>

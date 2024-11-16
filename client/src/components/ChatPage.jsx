@@ -23,7 +23,7 @@ const ChatPage = () => {
     if (!textMessage.trim()) return;
     try {
       const res = await axios.post(
-        `http://localhost:8000/api/v1/message/send/${receiverId}`,
+        `https://socialspace-server.onrender.com/api/v1/message/send/${receiverId}`,
         { textMessage },
         {
           headers: {

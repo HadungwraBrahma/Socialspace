@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
-import { Bookmark, BookmarkCheck, MessageCircle, MoreHorizontal, Send } from "lucide-react";
+import {
+  Bookmark,
+  BookmarkCheck,
+  MessageCircle,
+  MoreHorizontal,
+  Send,
+} from "lucide-react";
 import { Button } from "./ui/button";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
@@ -29,6 +35,9 @@ const Post = ({ post }) => {
     user.following.includes(post?.author?._id) || false
   );
 
+  const [isPostNewCommentloading, setIsPostNewCommentLoading] = useState(false);
+  const [isFollowingLoading, setIsFollowingLoading] = useState(false);
+
   useEffect(() => {
     setBookmarked(user?.bookmarks?.includes(post?._id) || false);
   }, [user, post]);
@@ -39,17 +48,20 @@ const Post = ({ post }) => {
   };
 
   const likeOrDislikeHandler = async () => {
+    const originalLiked = liked;
+    const originalPostLike = postLike;
+    const updatedLikes = liked ? postLike - 1 : postLike + 1;
+
+    setLiked(!liked);
+    setPostLike(updatedLikes);
+
     try {
       const action = liked ? "dislike" : "like";
       const res = await axios.get(
-        `http://localhost:8000/api/v1/post/${post?._id}/${action}`,
+        `https://socialspace-server.onrender.com/api/v1/post/${post?._id}/${action}`,
         { withCredentials: true }
       );
       if (res.data.success) {
-        const updatedLikes = liked ? postLike - 1 : postLike + 1;
-        setPostLike(updatedLikes);
-        setLiked(!liked);
-
         const updatedPostData = posts.map((p) =>
           p._id === post._id
             ? {
@@ -61,17 +73,25 @@ const Post = ({ post }) => {
             : p
         );
         dispatch(setPost(updatedPostData));
-        toast.success(res.data.message);
+      } else {
+        throw new Error(res.data.message);
       }
     } catch (err) {
       console.error(err);
+      setLiked(originalLiked);
+      setPostLike(originalPostLike);
+      toast.error("Failed to update like status.");
     }
   };
 
   const commentHandler = async () => {
+    if (isPostNewCommentloading) return;
+
+    setIsPostNewCommentLoading(true);
+
     try {
       const res = await axios.post(
-        `http://localhost:8000/api/v1/post/${post?._id}/comment`,
+        `https://socialspace-server.onrender.com/api/v1/post/${post?._id}/comment`,
         { text },
         {
           headers: { "Content-Type": "application/json" },
@@ -92,51 +112,76 @@ const Post = ({ post }) => {
       }
     } catch (err) {
       console.error(err);
+      toast.error("Failed to post comment.");
+    } finally {
+      setIsPostNewCommentLoading(false);
     }
   };
 
   const deletePostHandler = async () => {
+    const originalPosts = [...posts];
+
+    const updatedPostData = posts.filter((p) => p?._id !== post?._id);
+    dispatch(setPost(updatedPostData));
+
     try {
       const res = await axios.delete(
-        `http://localhost:8000/api/v1/post/delete/${post?._id}`,
+        `https://socialspace-server.onrender.com/api/v1/post/delete/${post?._id}`,
         { withCredentials: true }
       );
       if (res.data.success) {
-        const updatedPostData = posts.filter((p) => p?._id !== post?._id);
-        dispatch(setPost(updatedPostData));
         toast.success(res.data.message);
+      } else {
+        throw new Error(res.data.message);
       }
     } catch (err) {
       console.error(err);
-      toast.error(err.response?.data?.message);
+      dispatch(setPost(originalPosts));
+      toast.error("Failed to delete the post. Please try again.");
     }
   };
 
   const bookmarkHandler = async () => {
+    const wasBookmarked = bookmarked;
+    setBookmarked(!bookmarked);
+
+    const updatedBookmarks = wasBookmarked
+      ? user.bookmarks.filter((id) => id !== post._id)
+      : [...user.bookmarks, post._id];
+    dispatch(setAuthUser({ ...user, bookmarks: updatedBookmarks }));
+
     try {
       const res = await axios.get(
-        `http://localhost:8000/api/v1/post/${post?._id}/bookmark`,
+        `https://socialspace-server.onrender.com/api/v1/post/${post?._id}/bookmark`,
         { withCredentials: true }
       );
       if (res.data.success) {
-        toast.success(res.data.message);
-        setBookmarked(!bookmarked);
-
-        const updatedBookmarks = bookmarked
-          ? user.bookmarks.filter((id) => id !== post._id)
-          : [...user.bookmarks, post._id];
-
-        dispatch(setAuthUser({ ...user, bookmarks: updatedBookmarks }));
+        // toast.success(res.data.message);
+      } else {
+        throw new Error(res.data.message);
       }
     } catch (err) {
       console.error(err);
+
+      setBookmarked(wasBookmarked);
+
+      const rollbackBookmarks = wasBookmarked
+        ? [...user.bookmarks, post._id]
+        : user.bookmarks.filter((id) => id !== post._id);
+      dispatch(setAuthUser({ ...user, bookmarks: rollbackBookmarks }));
+
+      toast.error("Failed to update bookmark. Please try again.");
     }
   };
 
   const followUnfollowHandler = async () => {
+    if (isFollowingLoading) return;
+
+    setIsFollowingLoading(true);
+
     try {
       const res = await axios.post(
-        `http://localhost:8000/api/v1/user/followorunfollow/${post?.author?._id}`,
+        `https://socialspace-server.onrender.com/api/v1/user/followorunfollow/${post?.author?._id}`,
         {},
         { withCredentials: true }
       );
@@ -153,6 +198,8 @@ const Post = ({ post }) => {
     } catch (err) {
       console.error(err);
       toast.error(err.response?.data?.message);
+    } finally {
+      setIsFollowingLoading(false);
     }
   };
 
@@ -169,7 +216,10 @@ const Post = ({ post }) => {
         <div className="flex items-center gap-2">
           <Link to={`/profile/${post?.author?._id}`}>
             <Avatar>
-              <AvatarImage src={post.author?.profilePicture} alt="profile_pic" />
+              <AvatarImage
+                src={post.author?.profilePicture}
+                alt="profile_pic"
+              />
               <AvatarFallback>DP</AvatarFallback>
             </Avatar>
           </Link>
@@ -192,8 +242,15 @@ const Post = ({ post }) => {
                 onClick={followUnfollowHandler}
                 variant="ghost"
                 className="cursor-pointer w-fit text-[#ED4956] font-bold"
+                disabled={isFollowingLoading}
               >
-                {following ? "Unfollow" : "Follow"}
+                {isFollowingLoading
+                  ? following
+                    ? "Unfollowing..."
+                    : "Following..."
+                  : following
+                  ? "Unfollow"
+                  : "Follow"}
               </Button>
             )}
             {user && user._id === post?.author?._id && (
@@ -254,7 +311,11 @@ const Post = ({ post }) => {
                   value={postUrl}
                   readOnly
                 />
-                <Button onClick={copyToClipboard} variant="ghost" className="ml-2">
+                <Button
+                  onClick={copyToClipboard}
+                  variant="ghost"
+                  className="ml-2"
+                >
                   Copy Link
                 </Button>
               </div>
@@ -289,23 +350,21 @@ const Post = ({ post }) => {
           View all {comment.length} comments
         </span>
       )}
-      <div className="flex items-center justify-between mt-4">
-        <input
-          type="text"
+      <div className="flex mt-4 gap-2 w-full justify-between">
+        <textarea
+          rows="1"
+          className="w-full p-2 rounded-sm"
           placeholder="Add a comment..."
-          className="w-full text-sm outline-none"
           value={text}
           onChange={changeEventHandler}
         />
-        <button
-          disabled={!text}
-          className={`${
-            text ? "text-[#ED4956]" : "text-gray-300"
-          } text-sm font-bold ml-2`}
+        <Button
+          variant="outline"
+          disabled={isPostNewCommentloading || !text.trim()}
           onClick={commentHandler}
         >
-          Post
-        </button>
+          {isPostNewCommentloading ? "Posting..." : "Post"}
+        </Button>
       </div>
       <CommentDialog open={open} setOpen={setOpen} />
     </div>
