@@ -8,17 +8,26 @@ import { getReciverSocketId, io } from "../socket/socket.js";
 
 export const register = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
-    if (!username || !email || !password) {
+    const { username, email, password, confirmPassword } = req.body;
+
+    if (!username || !email || !password || !confirmPassword) {
       return res.status(401).json({
-        message: "Something is missing, please check!",
+        message: "All fields are required.",
         success: false,
       });
     }
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        message: "Passwords do not match.",
+        success: false,
+      });
+    }
+
     const user = await User.findOne({ email });
     if (user) {
       return res.status(401).json({
-        message: "User already exist on this email id.",
+        message: "User already exists on this email ID.",
         success: false,
       });
     }
@@ -29,14 +38,16 @@ export const register = async (req, res) => {
       email,
       password: hashedPassword,
     });
+
     return res.status(201).json({
-      message: "Account created succesfully.",
+      message: "Account created successfully.",
       success: true,
     });
   } catch (err) {
     console.log(err);
   }
 };
+
 
 export const login = async (req, res) => {
   try {

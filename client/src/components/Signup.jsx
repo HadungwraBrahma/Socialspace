@@ -13,6 +13,7 @@ const Signup = () => {
     username: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -24,6 +25,12 @@ const Signup = () => {
 
   const signupHandler = async (e) => {
     e.preventDefault();
+
+    if (input.password !== input.confirmPassword) {
+      toast.error("Passwords do not match.");
+      return;
+    }
+
     try {
       setLoading(true);
       const res = await axiosInstance.post("/api/v1/user/register", input, {
@@ -38,6 +45,7 @@ const Signup = () => {
           username: "",
           email: "",
           password: "",
+          confirmPassword: "",
         });
       }
     } catch (err) {
@@ -52,7 +60,7 @@ const Signup = () => {
     if (user) {
       navigate("/");
     }
-  }, []);
+  }, [user, navigate]);
 
   return (
     <div className="flex items-center w-screen h-screen justify-center">
@@ -74,7 +82,7 @@ const Signup = () => {
             value={input.username}
             onChange={changeEventHandler}
             className="focus-visible:ring-transparent"
-            maxlength="150"
+            maxLength="150"
           />
         </div>
         <div>
@@ -85,7 +93,7 @@ const Signup = () => {
             value={input.email}
             onChange={changeEventHandler}
             className="focus-visible:ring-transparent"
-            maxlength="300"
+            maxLength="300"
           />
         </div>
         <div>
@@ -96,7 +104,18 @@ const Signup = () => {
             value={input.password}
             onChange={changeEventHandler}
             className="focus-visible:ring-transparent"
-            maxlength="300"
+            maxLength="300"
+          />
+        </div>
+        <div>
+          <Label>Confirm Password</Label>
+          <Input
+            type="password"
+            name="confirmPassword"
+            value={input.confirmPassword}
+            onChange={changeEventHandler}
+            className="focus-visible:ring-transparent"
+            maxLength="300"
           />
         </div>
         {loading ? (

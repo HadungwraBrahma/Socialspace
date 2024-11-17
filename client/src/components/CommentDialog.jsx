@@ -137,16 +137,19 @@ const CommentDialog = ({ open, setOpen }) => {
         className="max-w-5xl w-full sm:max-w-4xl sm:w-[600px] h-auto max-h-[70vh] flex flex-col sm:flex-row p-0 overflow-hidden"
       >
         {/* Image Section */}
-        <div className="w-full sm:w-1/2">
+        <div
+          className="h-[200px] sm:w-1/2 flex lg:h-full items-center lg:my-auto justify-center bg-gray-100"
+        >
           <img
             src={selectedPost?.image}
             alt="post_img"
-            className="w-full h-full object-contain"
+            className="w-auto h-full object-cover"
           />
         </div>
 
         {/* Comments Section */}
         <div className="w-full sm:w-1/2 flex flex-col h-full max-h-[70vh] overflow-hidden">
+          {/* Header */}
           <div className="flex items-center justify-between p-4">
             <div className="flex items-center gap-3">
               <Link to={`/profile/${selectedPost?.author?._id}`}>
@@ -182,6 +185,7 @@ const CommentDialog = ({ open, setOpen }) => {
             )}
           </div>
           <hr />
+          {/* Comments List */}
           <div className="flex-1 overflow-y-auto p-4">
             {comment.map((com) => (
               <div key={com._id} className="flex items-start gap-4 relative">
@@ -198,6 +202,7 @@ const CommentDialog = ({ open, setOpen }) => {
             ))}
             <div ref={commentEndRef} />
           </div>
+          {/* Comment Input */}
           <div className="p-4 flex items-center gap-2">
             <input
               type="text"

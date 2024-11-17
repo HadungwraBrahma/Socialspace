@@ -96,11 +96,18 @@ const Login = () => {
           <Button type="submit">Login</Button>
         )}
         <span className="text-center">
-          Dosen&apos;t have an account?{" "}
+          Doesn&apos;t have an account?{" "}
           <Link to="/signup" className="text-blue-600">
             Signup
           </Link>
         </span>
+        <p className="text-sm text-center text-gray-500 mt-4">
+          <strong>Note:</strong> For testing, use:
+          <br />
+          Email: <span className="font-mono">test@gmail.com</span>
+          <br />
+          Password: <span className="font-mono">123456</span>
+        </p>
       </form>
     </div>
   );
