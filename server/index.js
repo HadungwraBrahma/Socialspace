@@ -24,7 +24,7 @@ app.use(cookieParser());
 app.use(urlencoded({ extended: true }));
 
 const allowedOrigins = [
-  "https://socialspace-client.onrender.com",
+  "https://socialspace-orpin.vercel.app/",
   "http://localhost:5173", //for dev purpose
 ];
 
