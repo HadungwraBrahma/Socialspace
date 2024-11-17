@@ -27,9 +27,9 @@ const Post = ({ post }) => {
   const { posts } = useSelector((store) => store.post);
   const dispatch = useDispatch();
 
-  const [liked, setLiked] = useState(post?.likes?.includes(user?._id) || false);
-  const [postLike, setPostLike] = useState(post?.likes?.length || 0);
-  const [comment, setComment] = useState(post?.comments || []);
+  const [liked, setLiked] = useState(post.likes.includes(user?._id) || false);
+  const [postLike, setPostLike] = useState(post.likes.length);
+  const [comment, setComment] = useState(post.comments);
   const [bookmarked, setBookmarked] = useState(false);
   const [following, setFollowing] = useState(
     user?.following?.includes(post?.author?._id) || false
@@ -62,7 +62,7 @@ const Post = ({ post }) => {
       );
       if (res.data.success) {
         const updatedPostData = posts?.map((p) =>
-          p._id === post._id
+          p?._id === post?._id
             ? {
                 ...p,
                 likes: liked
@@ -101,7 +101,7 @@ const Post = ({ post }) => {
         setComment(updatedCommentData);
 
         const updatedPostData = posts?.map((p) =>
-          p._id === post?._id ? { ...p, comments: updatedCommentData } : p
+          p?._id === post?._id ? { ...p, comments: updatedCommentData } : p
         );
 
         dispatch(setPost(updatedPostData));
@@ -119,7 +119,7 @@ const Post = ({ post }) => {
   const deletePostHandler = async () => {
     const originalPosts = [...posts];
 
-    const updatedPostData = posts.filter((p) => p?._id !== post?._id);
+    const updatedPostData = posts?.filter((p) => p?._id !== post?._id);
     dispatch(setPost(updatedPostData));
 
     try {
@@ -143,8 +143,8 @@ const Post = ({ post }) => {
     setBookmarked(!bookmarked);
 
     const updatedBookmarks = wasBookmarked
-      ? user?.bookmarks?.filter((id) => id !== post?._id)
-      : [...(user?.bookmarks || []), post?._id];
+      ? user?.bookmarks.filter((id) => id !== post?._id)
+      : [...user.bookmarks, post?._id];
     dispatch(setAuthUser({ ...user, bookmarks: updatedBookmarks }));
 
     try {
@@ -160,8 +160,8 @@ const Post = ({ post }) => {
       setBookmarked(wasBookmarked);
 
       const rollbackBookmarks = wasBookmarked
-        ? [...(user?.bookmarks || []), post?._id]
-        : user?.bookmarks?.filter((id) => id !== post?._id);
+        ? [...user.bookmarks, post?._id]
+        : user?.bookmarks.filter((id) => id !== post?._id);
       dispatch(setAuthUser({ ...user, bookmarks: rollbackBookmarks }));
 
       toast.error("Failed to update bookmark. Please try again.");
@@ -182,8 +182,8 @@ const Post = ({ post }) => {
         toast.success(res.data.message);
 
         const updatedFollowing = following
-          ? user?.following?.filter((id) => id !== post?.author?._id)
-          : [...(user?.following || []), post?.author?._id];
+          ? user?.following.filter((id) => id !== post?.author?._id)
+          : [...user.following, post?.author?._id];
 
         dispatch(setAuthUser({ ...user, following: updatedFollowing }));
         setFollowing(!following);
@@ -230,7 +230,7 @@ const Post = ({ post }) => {
             <MoreHorizontal className="cursor-pointer" />
           </DialogTrigger>
           <DialogContent className="flex flex-col items-center text-sm text-center">
-            {user && user._id !== post?.author?._id && (
+            {user && user?._id !== post?.author?._id && (
               <Button
                 onClick={followUnfollowHandler}
                 variant="ghost"
@@ -246,69 +246,122 @@ const Post = ({ post }) => {
                   : "Follow"}
               </Button>
             )}
-            {user?._id === post?.author?._id && (
+            {user && user?._id === post?.author?._id && (
               <Button
-                variant="ghost"
-                className="w-full text-red-600 mt-4"
                 onClick={deletePostHandler}
+                variant="ghost"
+                className="cursor-pointer w-fit"
               >
-                Delete Post
+                Delete
               </Button>
             )}
           </DialogContent>
         </Dialog>
       </div>
-
-      <div className="text-lg mt-2 text-center">{post?.description}</div>
-      {post?.imageUrl && (
-        <div className="relative mt-4">
-          <img
-            className="object-cover w-full max-h-96 rounded-xl"
-            src={post?.imageUrl}
-            alt="Post Image"
-          />
-        </div>
-      )}
-
-      <div className="mt-4 flex justify-between text-xl">
-        <div className="flex items-center gap-4">
-          <button onClick={likeOrDislikeHandler}>
-            {liked ? <FaHeart className="text-[#ED4956]" /> : <FaRegHeart />}
-          </button>
-          <span>{postLike} Likes</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            className="w-full gap-2"
-            onClick={() => setOpen(true)}
-          >
-            <MessageCircle className="w-5 h-5" />
-            Comment
-          </Button>
-        </div>
-      </div>
-      {open && (
-        <CommentDialog
-          post={post}
-          comments={comment}
-          setComments={setComment}
-          setOpen={setOpen}
+      <Link to={`/post/${post?._id}`}>
+        <img
+          className="rounded-sm my-2 w-full object-cover"
+          src={post?.image}
+          alt="post_image"
+          onClick={() => dispatch(setSelectedPost(post))}
         />
-      )}
-      <div className="mt-4 flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <button onClick={bookmarkHandler}>
-            {bookmarked ? <BookmarkCheck /> : <Bookmark />}
-          </button>
-          <span>Bookmark</span>
+      </Link>
+      <div className="flex items-center justify-between my-2">
+        <div className="flex items-center gap-3">
+          {liked ? (
+            <FaHeart
+              onClick={likeOrDislikeHandler}
+              size={"22px"}
+              className="cursor-pointer text-red-600"
+            />
+          ) : (
+            <FaRegHeart
+              onClick={likeOrDislikeHandler}
+              size={"22px"}
+              className="cursor-pointer hover:text-gray-600"
+            />
+          )}
+          <MessageCircle
+            onClick={() => {
+              dispatch(setSelectedPost(post));
+              setOpen(true); // Open the comment dialog
+            }}
+            className="cursor-pointer hover:text-gray-600"
+          />
+          <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+            <DialogTrigger asChild>
+              <Send
+                onClick={() => setShowShareDialog(true)}
+                className="cursor-pointer hover:text-gray-600"
+              />
+            </DialogTrigger>
+            <DialogContent className="text-sm text-center">
+              <p className="mb-2">Share this post:</p>
+              <div className="flex items-center justify-between">
+                <input
+                  type="text"
+                  className="w-full p-2 border rounded-sm"
+                  value={postUrl}
+                  readOnly
+                />
+                <Button
+                  onClick={copyToClipboard}
+                  variant="ghost"
+                  className="ml-2"
+                >
+                  Copy Link
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
-        <button onClick={copyToClipboard}>
-          Share
-        </button>
+        {bookmarked ? (
+          <BookmarkCheck
+            onClick={bookmarkHandler}
+            className="cursor-pointer hover:text-gray-600"
+          />
+        ) : (
+          <Bookmark
+            onClick={bookmarkHandler}
+            className="cursor-pointer hover:text-gray-600"
+          />
+        )}
       </div>
+      <span className="font-medium block mb-2">{postLike} likes</span>
+      <p className="break-words">
+        <span className="font-medium mr-2">{post?.author?.username}</span>
+        {post?.caption}
+      </p>
+      {comment?.length > 0 && (
+        <span
+          onClick={() => {
+            dispatch(setSelectedPost(post));
+            setOpen(true);
+          }}
+          className="text-gray-400 cursor-pointer"
+        >
+          View all {comment?.length} comments
+        </span>
+      )}
+      <div className="flex mt-4 gap-2 w-full justify-between">
+        <textarea
+          rows="1"
+          className="w-full p-2 rounded-sm"
+          placeholder="Add a comment..."
+          value={text}
+          onChange={changeEventHandler}
+        />
+        <Button
+          variant="outline"
+          disabled={isPostNewCommentloading || !text.trim()}
+          onClick={commentHandler}
+        >
+          {isPostNewCommentloading ? "Posting..." : "Post"}
+        </Button>
+      </div>
+      <CommentDialog open={open} setOpen={setOpen} />
     </div>
   );
 };
 
-export default Post;
+export default Post; 
