@@ -252,11 +252,60 @@ const Post = ({ post }) => {
                 className="w-full text-red-600 mt-4"
                 onClick={deletePostHandler}
               >
-                Delete
+                Delete Post
               </Button>
             )}
           </DialogContent>
         </Dialog>
+      </div>
+
+      <div className="text-lg mt-2 text-center">{post?.description}</div>
+      {post?.imageUrl && (
+        <div className="relative mt-4">
+          <img
+            className="object-cover w-full max-h-96 rounded-xl"
+            src={post?.imageUrl}
+            alt="Post Image"
+          />
+        </div>
+      )}
+
+      <div className="mt-4 flex justify-between text-xl">
+        <div className="flex items-center gap-4">
+          <button onClick={likeOrDislikeHandler}>
+            {liked ? <FaHeart className="text-[#ED4956]" /> : <FaRegHeart />}
+          </button>
+          <span>{postLike} Likes</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            className="w-full gap-2"
+            onClick={() => setOpen(true)}
+          >
+            <MessageCircle className="w-5 h-5" />
+            Comment
+          </Button>
+        </div>
+      </div>
+      {open && (
+        <CommentDialog
+          post={post}
+          comments={comment}
+          setComments={setComment}
+          setOpen={setOpen}
+        />
+      )}
+      <div className="mt-4 flex justify-between items-center">
+        <div className="flex items-center gap-4">
+          <button onClick={bookmarkHandler}>
+            {bookmarked ? <BookmarkCheck /> : <Bookmark />}
+          </button>
+          <span>Bookmark</span>
+        </div>
+        <button onClick={copyToClipboard}>
+          Share
+        </button>
       </div>
     </div>
   );
