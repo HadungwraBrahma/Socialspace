@@ -64,12 +64,12 @@ const FullPostPage = () => {
 
       if (res.data.success) {
         const updatedPostData = posts.map((p) =>
-          p._id === post._id
+          p?._id === post?._id
             ? {
                 ...p,
                 likes: liked
-                  ? p.likes.filter((id) => id !== user._id)
-                  : [...p.likes, user._id],
+                  ? p.likes.filter((id) => id !== user?._id)
+                  : [...p.likes, user?._id],
               }
             : p
         );
@@ -92,7 +92,7 @@ const FullPostPage = () => {
     setBookmarked(!bookmarked);
 
     const updatedBookmarks = wasBookmarked
-      ? user.bookmarks.filter((id) => id !== postId)
+      ? user?.bookmarks?.filter((id) => id !== postId)
       : [...user.bookmarks, postId];
     dispatch(setAuthUser({ ...user, bookmarks: updatedBookmarks }));
 
@@ -111,7 +111,7 @@ const FullPostPage = () => {
 
       const rollbackBookmarks = wasBookmarked
         ? [...user.bookmarks, postId]
-        : user.bookmarks.filter((id) => id !== postId);
+        : user?.bookmarks?.filter((id) => id !== postId);
       dispatch(setAuthUser({ ...user, bookmarks: rollbackBookmarks }));
 
       toast.error("Failed to update bookmark. Please try again.");
@@ -125,9 +125,9 @@ const FullPostPage = () => {
       _id: Date.now(), // Temporary ID for the optimistic update
       text: text,
       author: {
-        _id: user._id,
-        username: user.username,
-        profilePicture: user.profilePicture,
+        _id: user?._id,
+        username: user?.username,
+        profilePicture: user?.profilePicture,
       },
       createdAt: new Date().toISOString(),
     };
@@ -143,12 +143,12 @@ const FullPostPage = () => {
       if (res.data.success) {
         setComments((prev) =>
           prev.map((comment) =>
-            comment._id === newComment._id ? res.data.comment : comment
+            comment?._id === newComment?._id ? res.data.comment : comment
           )
         );
 
         const updatedPostData = posts.map((p) =>
-          p._id === post._id
+          p?._id === post?._id
             ? {
                 ...p,
                 comments: [res.data.comment, ...comments],
@@ -162,7 +162,7 @@ const FullPostPage = () => {
     } catch (err) {
       console.error(err);
       setComments((prev) =>
-        prev.filter((comment) => comment._id !== newComment._id)
+        prev.filter((comment) => comment?._id !== newComment?._id)
       );
       toast.error("Failed to post comment. Please try again.");
     }
@@ -180,13 +180,13 @@ const FullPostPage = () => {
     const originalComments = [...comments];
 
     const updatedComments = comments.filter(
-      (comment) => comment._id !== commentId
+      (comment) => comment?._id !== commentId
     );
 
     setComments(updatedComments);
 
     const updatedPostData = posts.map((p) =>
-      p._id === post._id ? { ...p, comments: [...updatedComments] } : p
+      p?._id === post?._id ? { ...p, comments: [...updatedComments] } : p
     );
 
     dispatch(setPost(updatedPostData));
@@ -206,7 +206,7 @@ const FullPostPage = () => {
       setComments(originalComments);
 
       const rollbackPostData = posts.map((p) =>
-        p._id === post._id ? { ...p, comments: [...originalComments] } : p
+        p?._id === post?._id ? { ...p, comments: [...originalComments] } : p
       );
       dispatch(setPost(rollbackPostData));
 
@@ -235,20 +235,20 @@ const FullPostPage = () => {
     <div className="my-8 w-full max-w-3xl mx-auto px-4">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <Link to={`/profile/${post.author?._id}`}>
+          <Link to={`/profile/${post?.author?._id}`}>
             <Avatar>
               <AvatarImage
-                src={post.author?.profilePicture}
+                src={post?.author?.profilePicture}
                 alt="User Profile"
               />
               <AvatarFallback>DP</AvatarFallback>
             </Avatar>
           </Link>
           <div>
-            <Link to={`/profile/${post.author?._id}`}>
-              <h1 className="font-semibold">{post.author?.username}</h1>
+            <Link to={`/profile/${post?.author?._id}`}>
+              <h1 className="font-semibold">{post?.author?.username}</h1>
             </Link>
-            {user?._id === post.author?._id && (
+            {user?._id === post?.author?._id && (
               <Badge variant="secondary">Author</Badge>
             )}
           </div>
@@ -267,15 +267,15 @@ const FullPostPage = () => {
       </div>
 
       <img
-        src={post.image}
+        src={post?.image}
         alt="Post"
         className="rounded-lg my-4 w-full h-auto object-cover"
       />
 
       <p className="font-semibold">{postLike} likes</p>
       <p className="mb-4 break-words">
-        <span className="font-semibold">{post.author?.username}</span>{" "}
-        {post.caption}
+        <span className="font-semibold">{post?.author?.username}</span>{" "}
+        {post?.caption}
       </p>
 
       <div className="flex items-center gap-6 mb-4">
@@ -350,10 +350,10 @@ const FullPostPage = () => {
             className="flex items-start gap-4 p-4 border-t border-gray-200 relative"
           >
             <Comment key={idx} comment={comment} />
-            {(comment.author._id === user._id ||
-              post.author._id === user._id) && (
+            {(comment?.author?._id === user?._id ||
+              post?.author?._id === user?._id) && (
               <button
-                onClick={() => deleteCommentHandler(comment._id)}
+                onClick={() => deleteCommentHandler(comment?._id)}
                 className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-red-500 text-white hover:bg-red-600 rounded-full px-2 py-1 text-xs transition duration-200"
               >
                 Delete
@@ -363,7 +363,7 @@ const FullPostPage = () => {
         ))}
       </div>
 
-      {visibleComments < sortedComments.length && (
+      {visibleComments < sortedComments?.length && (
         <button
           onClick={showMoreComments}
           className="text-blue-500 hover:underline mt-4 mr-4"
