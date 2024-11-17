@@ -27,9 +27,9 @@ const Post = ({ post }) => {
   const { posts } = useSelector((store) => store.post);
   const dispatch = useDispatch();
 
-  const [liked, setLiked] = useState(post.likes.includes(user?._id) || false);
-  const [postLike, setPostLike] = useState(post.likes.length);
-  const [comment, setComment] = useState(post.comments);
+  const [liked, setLiked] = useState(post?.likes?.includes(user?._id) || false);
+  const [postLike, setPostLike] = useState(post?.likes?.length || 0);
+  const [comment, setComment] = useState(post?.comments || []);
   const [bookmarked, setBookmarked] = useState(false);
   const [following, setFollowing] = useState(
     user?.following?.includes(post?.author?._id) || false
@@ -143,8 +143,8 @@ const Post = ({ post }) => {
     setBookmarked(!bookmarked);
 
     const updatedBookmarks = wasBookmarked
-      ? user.bookmarks.filter((id) => id !== post?._id)
-      : [...user.bookmarks, post?._id];
+      ? user?.bookmarks?.filter((id) => id !== post?._id)
+      : [...(user?.bookmarks || []), post?._id];
     dispatch(setAuthUser({ ...user, bookmarks: updatedBookmarks }));
 
     try {
@@ -160,8 +160,8 @@ const Post = ({ post }) => {
       setBookmarked(wasBookmarked);
 
       const rollbackBookmarks = wasBookmarked
-        ? [...user.bookmarks, post?._id]
-        : user.bookmarks.filter((id) => id !== post?._id);
+        ? [...(user?.bookmarks || []), post?._id]
+        : user?.bookmarks?.filter((id) => id !== post?._id);
       dispatch(setAuthUser({ ...user, bookmarks: rollbackBookmarks }));
 
       toast.error("Failed to update bookmark. Please try again.");
@@ -182,8 +182,8 @@ const Post = ({ post }) => {
         toast.success(res.data.message);
 
         const updatedFollowing = following
-          ? user.following.filter((id) => id !== post?.author?._id)
-          : [...user.following, post?.author?._id];
+          ? user?.following?.filter((id) => id !== post?.author?._id)
+          : [...(user?.following || []), post?.author?._id];
 
         dispatch(setAuthUser({ ...user, following: updatedFollowing }));
         setFollowing(!following);
@@ -246,11 +246,11 @@ const Post = ({ post }) => {
                   : "Follow"}
               </Button>
             )}
-            {user && user._id === post?.author?._id && (
+            {user?._id === post?.author?._id && (
               <Button
-                onClick={deletePostHandler}
                 variant="ghost"
-                className="cursor-pointer w-fit"
+                className="w-full text-red-600 mt-4"
+                onClick={deletePostHandler}
               >
                 Delete
               </Button>
@@ -258,108 +258,6 @@ const Post = ({ post }) => {
           </DialogContent>
         </Dialog>
       </div>
-      <Link to={`/post/${post?._id}`}>
-        <img
-          className="rounded-sm my-2 w-full object-cover"
-          src={post.image}
-          alt="post_image"
-          onClick={() => dispatch(setSelectedPost(post))}
-        />
-      </Link>
-      <div className="flex items-center justify-between my-2">
-        <div className="flex items-center gap-3">
-          {liked ? (
-            <FaHeart
-              onClick={likeOrDislikeHandler}
-              size={"22px"}
-              className="cursor-pointer text-red-600"
-            />
-          ) : (
-            <FaRegHeart
-              onClick={likeOrDislikeHandler}
-              size={"22px"}
-              className="cursor-pointer hover:text-gray-600"
-            />
-          )}
-          <MessageCircle
-            onClick={() => {
-              dispatch(setSelectedPost(post));
-              setOpen(true); // Open the comment dialog
-            }}
-            className="cursor-pointer hover:text-gray-600"
-          />
-          <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
-            <DialogTrigger asChild>
-              <Send
-                onClick={() => setShowShareDialog(true)}
-                className="cursor-pointer hover:text-gray-600"
-              />
-            </DialogTrigger>
-            <DialogContent className="text-sm text-center">
-              <p className="mb-2">Share this post:</p>
-              <div className="flex items-center justify-between">
-                <input
-                  type="text"
-                  className="w-full p-2 border rounded-sm"
-                  value={postUrl}
-                  readOnly
-                />
-                <Button
-                  onClick={copyToClipboard}
-                  variant="ghost"
-                  className="ml-2"
-                >
-                  Copy Link
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-        {bookmarked ? (
-          <BookmarkCheck
-            onClick={bookmarkHandler}
-            className="cursor-pointer hover:text-gray-600"
-          />
-        ) : (
-          <Bookmark
-            onClick={bookmarkHandler}
-            className="cursor-pointer hover:text-gray-600"
-          />
-        )}
-      </div>
-      <span className="font-medium block mb-2">{postLike} likes</span>
-      <p className="break-words">
-        <span className="font-medium mr-2">{post.author?.username}</span>
-        {post.caption}
-      </p>
-      {comment.length > 0 && (
-        <span
-          onClick={() => {
-            dispatch(setSelectedPost(post));
-            setOpen(true);
-          }}
-          className="text-gray-400 cursor-pointer"
-        >
-          View all {comment.length} comments
-        </span>
-      )}
-      <div className="flex mt-4 gap-2 w-full justify-between">
-        <textarea
-          rows="1"
-          className="w-full p-2 rounded-sm"
-          placeholder="Add a comment..."
-          value={text}
-          onChange={changeEventHandler}
-        />
-        <Button
-          variant="outline"
-          disabled={isPostNewCommentloading || !text.trim()}
-          onClick={commentHandler}
-        >
-          {isPostNewCommentloading ? "Posting..." : "Post"}
-        </Button>
-      </div>
-      <CommentDialog open={open} setOpen={setOpen} />
     </div>
   );
 };
