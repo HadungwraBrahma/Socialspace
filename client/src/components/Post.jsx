@@ -32,7 +32,7 @@ const Post = ({ post }) => {
   const [comment, setComment] = useState(post.comments);
   const [bookmarked, setBookmarked] = useState(false);
   const [following, setFollowing] = useState(
-    user.following.includes(post?.author?._id) || false
+    user?.following?.includes(post?.author?._id) || false
   );
 
   const [isPostNewCommentloading, setIsPostNewCommentLoading] = useState(false);
