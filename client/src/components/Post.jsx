@@ -61,13 +61,13 @@ const Post = ({ post }) => {
         `/api/v1/post/${post?._id}/${action}`
       );
       if (res.data.success) {
-        const updatedPostData = posts.map((p) =>
+        const updatedPostData = posts?.map((p) =>
           p._id === post._id
             ? {
                 ...p,
                 likes: liked
-                  ? p.likes.filter((id) => id !== user._id)
-                  : [...p.likes, user._id],
+                  ? p.likes.filter((id) => id !== user?._id)
+                  : [...p.likes, user?._id],
               }
             : p
         );
@@ -100,8 +100,8 @@ const Post = ({ post }) => {
         const updatedCommentData = [...comment, res.data.comment];
         setComment(updatedCommentData);
 
-        const updatedPostData = posts.map((p) =>
-          p._id === post._id ? { ...p, comments: updatedCommentData } : p
+        const updatedPostData = posts?.map((p) =>
+          p._id === post?._id ? { ...p, comments: updatedCommentData } : p
         );
 
         dispatch(setPost(updatedPostData));
@@ -143,8 +143,8 @@ const Post = ({ post }) => {
     setBookmarked(!bookmarked);
 
     const updatedBookmarks = wasBookmarked
-      ? user.bookmarks.filter((id) => id !== post._id)
-      : [...user.bookmarks, post._id];
+      ? user.bookmarks.filter((id) => id !== post?._id)
+      : [...user.bookmarks, post?._id];
     dispatch(setAuthUser({ ...user, bookmarks: updatedBookmarks }));
 
     try {
@@ -160,8 +160,8 @@ const Post = ({ post }) => {
       setBookmarked(wasBookmarked);
 
       const rollbackBookmarks = wasBookmarked
-        ? [...user.bookmarks, post._id]
-        : user.bookmarks.filter((id) => id !== post._id);
+        ? [...user.bookmarks, post?._id]
+        : user.bookmarks.filter((id) => id !== post?._id);
       dispatch(setAuthUser({ ...user, bookmarks: rollbackBookmarks }));
 
       toast.error("Failed to update bookmark. Please try again.");
@@ -196,7 +196,7 @@ const Post = ({ post }) => {
     }
   };
 
-  const postUrl = `${window.location.origin}/post/${post._id}`;
+  const postUrl = `${window.location.origin}/post/${post?._id}`;
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(postUrl);
@@ -210,7 +210,7 @@ const Post = ({ post }) => {
           <Link to={`/profile/${post?.author?._id}`}>
             <Avatar>
               <AvatarImage
-                src={post.author?.profilePicture}
+                src={post?.author?.profilePicture}
                 alt="profile_pic"
               />
               <AvatarFallback>DP</AvatarFallback>
@@ -218,9 +218,9 @@ const Post = ({ post }) => {
           </Link>
           <div className="flex items-center gap-3">
             <Link to={`/profile/${post?.author?._id}`}>
-              <h1>{post.author?.username}</h1>
+              <h1>{post?.author?.username}</h1>
             </Link>
-            {user._id === post.author._id && (
+            {user?._id === post?.author?._id && (
               <Badge variant="secondary">Author</Badge>
             )}
           </div>
@@ -258,7 +258,7 @@ const Post = ({ post }) => {
           </DialogContent>
         </Dialog>
       </div>
-      <Link to={`/post/${post._id}`}>
+      <Link to={`/post/${post?._id}`}>
         <img
           className="rounded-sm my-2 w-full object-cover"
           src={post.image}
