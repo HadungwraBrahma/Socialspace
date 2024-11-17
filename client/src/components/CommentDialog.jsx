@@ -187,10 +187,10 @@ const CommentDialog = ({ open, setOpen }) => {
           <hr />
           {/* Comments List */}
           <div className="flex-1 overflow-y-auto p-4">
-            {comment.map((com) => (
-              <div key={com._id} className="flex items-start gap-4 relative">
+            {comment?.map((com) => (
+              <div key={com?._id} className="flex items-start gap-4 relative">
                 <Comment comment={com} />
-                {user._id === com.author._id && (
+                {user?._id === com?.author?._id && (
                   <button
                     onClick={() => deleteCommentHandler(com._id)}
                     className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-red-500 text-white hover:bg-red-600 rounded-full px-2 py-1 text-xs"
