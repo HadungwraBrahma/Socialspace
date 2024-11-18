@@ -1,31 +1,28 @@
 import jwt from "jsonwebtoken";
 
-const isAuthenticated = async (req, res, next) => {
+export const isAuthenticated = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({
+      message: "Authorization token missing or invalid",
+      success: false,
+    });
+  }
+
+  const token = authHeader.split(" ")[1];
   try {
-    const token = req.cookies.token;
-    if (!token) {
-      return res.status(401).json({
-        message: "User not authenticated",
-        success: false,
-      });
-    }
-
-    const decode = jwt.verify(token, process.env.SECRET_KEY);
-
-    req.id = decode.userId;
+    const decoded = jwt.verify(token, process.env.SECRET_KEY);
+    req.id = decoded.userId;
     next();
   } catch (err) {
-    console.error("Authentication error:", err);
-
     if (err.name === "TokenExpiredError") {
       return res.status(401).json({
-        message: "Session expired. Please log in again.",
+        message: "Token expired",
         success: false,
       });
     }
-
     return res.status(401).json({
-      message: "Invalid or malformed token",
+      message: "Invalid token",
       success: false,
     });
   }

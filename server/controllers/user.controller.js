@@ -48,32 +48,35 @@ export const register = async (req, res) => {
   }
 };
 
-
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+
     if (!email || !password) {
       return res.status(401).json({
         message: "Something is missing, please check!",
         success: false,
       });
     }
-    let user = await User.findOne({ email });
+
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({
         message: "Incorrect email, user not found!",
         success: false,
       });
     }
-    const isPassowrdMatch = await bcrypt.compare(password, user.password);
-    if (!isPassowrdMatch) {
+
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    if (!isPasswordMatch) {
       return res.status(401).json({
         message: "Incorrect Password!",
         success: false,
       });
     }
 
-    const token = await jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
+    // Generate JWT token
+    const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
       expiresIn: "1d",
     });
 
@@ -87,34 +90,40 @@ export const login = async (req, res) => {
       })
     );
 
-    let { password: pass, ...userWithoutPassword } = user.toObject(); //different from original
-    userWithoutPassword = { ...userWithoutPassword, posts: populatedPosts };
+    // Remove password from user object
+    const { password: pass, ...userWithoutPassword } = user.toObject();
+    const userWithPopulatedPosts = {
+      ...userWithoutPassword,
+      posts: populatedPosts,
+    };
 
-    return res
-      .cookie("token", token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "None",
-        maxAge: 1 * 24 * 60 * 60 * 1000,
-      })
-      .json({
-        message: `Welcome back ${user.username}`,
-        success: true,
-        user: userWithoutPassword,
-      });
+    return res.status(200).json({
+      message: `Welcome back ${user.username}`,
+      success: true,
+      token,
+      user: userWithPopulatedPosts,
+    });
   } catch (err) {
-    console.log(err);
+    console.error(err);
+    return res.status(500).json({
+      message: "Internal Server Error",
+      success: false,
+    });
   }
 };
 
 export const logout = async (req, res) => {
   try {
-    return res.cookie("token", "", { maxAge: 0 }).json({
-      message: "Logged out succesfully",
+    return res.status(200).json({
+      message: "Logged out successfully",
       success: true,
     });
   } catch (err) {
-    console.log(err);
+    console.error(err);
+    return res.status(500).json({
+      message: "Internal Server Error",
+      success: false,
+    });
   }
 };
 

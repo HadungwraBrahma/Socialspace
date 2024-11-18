@@ -53,20 +53,18 @@ const LeftSidebar = () => {
 
   const logoutHandler = async () => {
     try {
-      const res = await axiosInstance.get("/api/v1/user/logout");
-      if (res.data.success) {
-        dispatch(setAuthUser(null));
-        dispatch(setSelectedPost(null));
-        dispatch(setPost([]));
+      localStorage.removeItem("token");
 
-        // Ensure navigate happens after state updates
-        setTimeout(() => {
-          navigate("/login", { replace: true });
-          window.location.reload();
-        }, 0);
+      dispatch(setAuthUser(null));
+      dispatch(setSelectedPost(null));
+      dispatch(setPost([]));
 
-        toast.success(res.data.message);
-      }
+      navigate("/login", { replace: true });
+
+      // Reload the window to ensure all components are reset
+      window.location.reload();
+
+      toast.success("Successfully logged out.");
     } catch (err) {
       toast.error(err.response?.data?.message || "Something went wrong");
     }

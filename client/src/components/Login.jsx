@@ -3,11 +3,11 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
-import axiosInstance from "@/axiosInstance";
 import { Link, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { setAuthUser } from "@/redux/authSlice";
+import axiosInstance from "@/axiosInstance"; // Keep this import
 
 const Login = () => {
   const [input, setInput] = useState({
@@ -23,27 +23,34 @@ const Login = () => {
     setInput({ ...input, [e.target.name]: e.target.value });
   };
 
-  const signupHandler = async (e) => {
+  const loginHandler = async (e) => {
     e.preventDefault();
     try {
       setLoading(true);
-      const res = await axiosInstance.post("/api/v1/user/login", input, {
+
+      const response = await axiosInstance.post("/api/v1/user/login", input, {
         headers: {
           "Content-Type": "application/json",
         },
       });
-      if (res.data.success) {
-        dispatch(setAuthUser(res.data.user));
+
+      if (response.data.success) {
+        localStorage.setItem("token", response.data.token);
+
+        dispatch(setAuthUser(response.data.user));
+
         navigate("/");
-        toast.success(res.data.message);
+
+        toast.success(response.data.message);
+
         setInput({
           email: "",
           password: "",
         });
       }
     } catch (err) {
-      console.log(err);
-      toast.error(err.response.data.message);
+      console.error(err);
+      toast.error(err.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -58,7 +65,7 @@ const Login = () => {
   return (
     <div className="flex items-center w-screen h-screen justify-center">
       <form
-        onSubmit={signupHandler}
+        onSubmit={loginHandler}
         className="shadow-lg flex flex-col gap-5 p-8"
       >
         <div>
