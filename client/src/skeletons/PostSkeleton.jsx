@@ -5,7 +5,7 @@ const PostSkeleton = () => {
     <div className="my-8 w-full max-w-sm mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between mb-4 animate-pulse">
-        <div className="w-72 flex items-center gap-2">
+        <div className="w-72 lg:w-96 flex items-center gap-2">
           <div className="w-10 h-10 bg-gray-300 rounded-full" />
           <div className="flex flex-col">
             <div className="w-24 h-4 bg-gray-300 rounded-sm" />

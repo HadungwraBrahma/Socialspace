@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 
 const Posts = () => {
   const { posts, isPostLoading } = useSelector((store) => store.post);
+  const isPost = true;
   return (
     <div className="grid grid-cols-1 gap-4 p-4">
       {isPostLoading

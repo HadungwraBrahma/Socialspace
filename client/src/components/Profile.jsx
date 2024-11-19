@@ -191,31 +191,39 @@ const Profile = () => {
 
           {/* Posts Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {displayedPost?.map((post) => (
-              <Link
-                key={post?._id}
-                to={`/post/${post._id}`}
-                className="relative group cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                <img
-                  src={post.image}
-                  alt="postimage"
-                  className="rounded-lg my-2 w-full aspect-square object-cover transition-transform duration-300 transform group-hover:scale-105"
-                />
-                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="flex items-center text-white space-x-4">
-                    <button className="flex items-center gap-2 hover:text-gray-300">
-                      <Heart />
-                      <span>{post?.likes.length}</span>
-                    </button>
-                    <button className="flex items-center gap-2 hover:text-gray-300">
-                      <MessageCircle />
-                      <span>{post?.comments.length}</span>
-                    </button>
+            {displayedPost && displayedPost.length > 0 ? (
+              displayedPost.map((post) => (
+                <Link
+                  key={post?._id}
+                  to={`/post/${post._id}`}
+                  className="relative group cursor-pointer rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  <img
+                    src={post.image}
+                    alt="postimage"
+                    className="rounded-lg my-2 w-full aspect-square object-cover transition-transform duration-300 transform group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="flex items-center text-white space-x-4">
+                      <button className="flex items-center gap-2 hover:text-gray-300">
+                        <Heart />
+                        <span>{post?.likes.length}</span>
+                      </button>
+                      <button className="flex items-center gap-2 hover:text-gray-300">
+                        <MessageCircle />
+                        <span>{post?.comments.length}</span>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              ))
+            ) : (
+              <div className="col-span-full text-center text-gray-500 py-10">
+                {activeTab === "posts"
+                  ? "This user has no posts yet."
+                  : "This user has no bookmarks yet."}
+              </div>
+            )}
           </div>
         </div>
       </div>
