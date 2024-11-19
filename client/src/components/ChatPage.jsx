@@ -61,7 +61,7 @@ const ChatPage = () => {
         <div className="overflow-y-auto max-h-[80vh] space-y-4">
           {usersToDisplay.length === 0 ? (
             <div className="text-gray-500 text-center">
-              No users to chat with.
+              Follow other users to chat.
             </div>
           ) : (
             usersToDisplay.map((suggestedUser) => {
