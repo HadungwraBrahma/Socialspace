@@ -7,7 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { setAuthUser } from "@/redux/authSlice";
-import axiosInstance from "@/axiosInstance"; // Keep this import
+import axiosInstance from "@/axiosInstance";
 
 const Login = () => {
   const [input, setInput] = useState({
@@ -15,6 +15,7 @@ const Login = () => {
     password: "",
   });
   const [loading, setLoading] = useState(false);
+  const [showDelayMessage, setShowDelayMessage] = useState(false); // New state for delay message
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { user } = useSelector((store) => store.auth);
@@ -28,11 +29,19 @@ const Login = () => {
     try {
       setLoading(true);
 
+      // Show delay message after 5 seconds of loading
+      const delayMessageTimeout = setTimeout(() => {
+        setShowDelayMessage(true);
+      }, 5000);
+
       const response = await axiosInstance.post("/api/v1/user/login", input, {
         headers: {
           "Content-Type": "application/json",
         },
       });
+
+      clearTimeout(delayMessageTimeout); // Clear the timeout if the response is received
+      setShowDelayMessage(false);
 
       if (response.data.success) {
         localStorage.setItem("token", response.data.token);
@@ -66,7 +75,7 @@ const Login = () => {
     <div className="flex items-center w-screen h-screen justify-center">
       <form
         onSubmit={loginHandler}
-        className="shadow-lg flex flex-col gap-5 p-8"
+        className="shadow-lg flex flex-col gap-5 p-8 w-[24rem] max-w-full"
       >
         <div>
           <h1 className="text-center font-bold text-xl">Socialspace</h1>
@@ -102,6 +111,19 @@ const Login = () => {
         ) : (
           <Button type="submit">Login</Button>
         )}
+        <div
+          className={`h-16 text-sm text-center text-gray-600 mt-2 w-37 ${
+            showDelayMessage ? "" : "hidden"
+          }`}
+        >
+          {loading && showDelayMessage && (
+            <p>
+              The first login may take longer since the backend server is hosted
+              on a free platform. The server may need some time to wake up.
+              Please wait.....^_^
+            </p>
+          )}
+        </div>
         <span className="text-center">
           Doesn&apos;t have an account?{" "}
           <Link to="/signup" className="text-blue-600">
